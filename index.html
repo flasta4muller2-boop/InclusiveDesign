@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inclusive Design Across the Project Lifecycle</title>
+  <meta name="description" content="A single-page prototype introducing inclusive design support for architects and architecture project teams.">
+  <style>
+    /* =========================
+       Design tokens
+       ========================= */
+    :root {
+      --ink: #17212b;
+      --muted: #526170;
+      --soft: #eef5f4;
+      --paper: #fbfbf7;
+      --white: #ffffff;
+      --navy: #0c2740;
+      --teal: #006d72;
+      --teal-2: #0f8f8b;
+      --mint: #d7eee8;
+      --gold: #f2c14e;
+      --clay: #e96d4c;
+      --line: rgba(12, 39, 64, .16);
+      --shadow: 0 22px 50px rgba(12, 39, 64, .14);
+      --shadow-soft: 0 12px 28px rgba(12, 39, 64, .1);
+      --radius-lg: 30px;
+      --radius-md: 20px;
+      --radius-sm: 12px;
+      --max: 1180px;
+      --nav-h: 74px;
+      --space-1: .5rem;
+      --space-2: .8rem;
+      --space-3: 1rem;
+      --space-4: 1.5rem;
+      --space-5: 2rem;
+      --space-6: 3rem;
+      --space-7: 4.5rem;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--nav-h) + 18px);
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(15, 143, 139, .16), transparent 34rem),
+        radial-gradient(circle at 8% 12%, rgba(242, 193, 78, .18), transparent 28rem),
+        linear-gradient(180deg, #fbfbf7 0%, #f6faf8 45%, #fbfbf7 100%);
+      line-height: 1.55;
+    }
+
+    body.nav-open { overflow: hidden; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+      }
+    }
+
+    a { color: inherit; }
+
+    img { max-width: 100%; display: block; }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    button, input, textarea { font: inherit; }
+
+    :focus-visible {
+      outline: 4px solid rgba(242, 193, 78, .88);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 999;
+      background: var(--navy);
+      color: var(--white);
+      padding: .8rem 1rem;
+      border-radius: 999px;
+      transform: translateY(-140%);
+      transition: transform .2s ease;
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0;
+      z-index: 998;
+      background: linear-gradient(90deg, var(--gold), var(--teal-2));
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--max));
+      margin-inline: auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      color: var(--teal);
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      margin: 0 0 .75rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 3px;
+      background: currentColor;
+      border-radius: 999px;
+    }
+
+    h1, h2, h3, h4 { line-height: 1.05; margin: 0; color: var(--navy); }
+
+    h1 {
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      letter-spacing: -.07em;
+      max-width: 850px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 4.6vw, 4.1rem);
+      letter-spacing: -.055em;
+      max-width: 880px;
+    }
+
+    h3 {
+      font-size: clamp(1.35rem, 2.1vw, 2rem);
+      letter-spacing: -.035em;
+    }
+
+    p { margin: 0; }
+
+    .lead {
+      font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .55rem;
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      padding: .85rem 1.15rem;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .btn:hover, .btn:focus-visible { transform: translateY(-2px); }
+
+    .btn-primary {
+      color: var(--white);
+      background: var(--navy);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .btn-primary:hover { background: #143653; }
+
+    .btn-secondary {
+      color: var(--navy);
+      background: var(--white);
+      border: 1px solid var(--line);
+    }
+
+    .btn-soft {
+      color: var(--navy);
+      background: var(--mint);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      border: 1px solid rgba(12, 39, 64, .14);
+      background: rgba(255,255,255,.78);
+      border-radius: 999px;
+      padding: .45rem .75rem;
+      font-size: .86rem;
+      font-weight: 760;
+      color: var(--navy);
+      box-shadow: 0 8px 18px rgba(12,39,64,.06);
+    }
+
+    .section {
+      padding: var(--space-7) 0;
+      position: relative;
+    }
+
+    .section-header {
+      display: grid;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .muted { color: var(--muted); }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      height: var(--nav-h);
+      background: rgba(251, 251, 247, .86);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-inner {
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .75rem;
+      color: var(--navy);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      text-decoration: none;
+      min-width: max-content;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--white);
+      background:
+        linear-gradient(135deg, var(--navy), var(--teal)),
+        var(--navy);
+      box-shadow: 0 12px 22px rgba(12, 39, 64, .18);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: .2rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: .45rem .68rem;
+      color: var(--muted);
+      text-decoration: none;
+      border-radius: 999px;
+      font-size: .92rem;
+      font-weight: 760;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a[aria-current="true"] {
+      color: var(--navy);
+      background: rgba(0, 109, 114, .1);
+    }
+
+    .nav-toggle {
+      display: none;
+      background: var(--white);
+      color: var(--navy);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      min-height: 44px;
+      padding: .35rem .8rem;
+      font-weight: 850;
+    }
+
+    .hero {
+      padding: calc(var(--space-7) + 1rem) 0 var(--space-7);
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+      gap: clamp(2rem, 4vw, 4rem);
+      align-items: center;
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: var(--space-4);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: .3rem;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 540px;
+      display: grid;
+      place-items: center;
+    }
+
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      width: min(82vw, 520px);
+      aspect-ratio: 1;
+      border-radius: 42% 58% 45% 55%;
+      background:
+        radial-gradient(circle at 58% 35%, rgba(255,255,255,.95) 0 18%, transparent 19%),
+        linear-gradient(135deg, rgba(215,238,232,.95), rgba(242,193,78,.36));
+      box-shadow: var(--shadow);
+      animation: breathe 6s ease-in-out infinite alternate;
+    }
+
+    .hero-visual::after {
+      content: "";
+      position: absolute;
+      inset: auto 4% 10% 4%;
+      height: 14px;
+      background: rgba(12,39,64,.12);
+      filter: blur(8px);
+      border-radius: 999px;
+    }
+
+    @keyframes breathe {
+      from { transform: rotate(-5deg) scale(.98); }
+      to { transform: rotate(4deg) scale(1.03); }
+    }
+
+    .gif-stage {
+      position: relative;
+      width: min(82vw, 370px);
+      border-radius: 32px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(12, 39, 64, .12);
+      z-index: 1;
+      isolation: isolate;
+    }
+
+    .gif-stage::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(0,109,114,.16);
+      border-radius: 22px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .gif-stage img {
+      width: 100%;
+      aspect-ratio: 340 / 424;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .hero-still { display: none; }
+
+    .motion-paused .hero-gif { display: none; }
+    .motion-paused .hero-still { display: block; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-gif { display: none; }
+      .hero-still { display: block; }
+      .hero-visual::before { animation: none; }
+    }
+
+    .motion-toggle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      z-index: 3;
+      border: 1px solid rgba(12,39,64,.16);
+      color: var(--navy);
+      background: rgba(255,255,255,.9);
+      border-radius: 999px;
+      padding: .55rem .75rem;
+      min-height: 42px;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .insight-strip {
+      margin-top: var(--space-6);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .9rem;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,.8);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      box-shadow: 0 12px 24px rgba(12,39,64,.07);
+    }
+
+    .stat-num {
+      font-size: 2.2rem;
+      font-weight: 950;
+      color: var(--teal);
+      letter-spacing: -.06em;
+    }
+
+    .stat-card span:last-child {
+      display: block;
+      color: var(--muted);
+      font-weight: 720;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+    }
+
+    .card {
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: 0 12px 24px rgba(12,39,64,.07);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .card:hover, .card:focus-within {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-soft);
+      border-color: rgba(0,109,114,.35);
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--mint);
+      color: var(--navy);
+      font-weight: 900;
+      margin-bottom: .9rem;
+    }
+
+    .card h3 { margin-bottom: .65rem; }
+
+    .project-callout {
+      margin-top: var(--space-4);
+      padding: 1rem 1.1rem;
+      border-left: 5px solid var(--teal);
+      background: rgba(215,238,232,.55);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--navy);
+      font-weight: 760;
+    }
+
+    .comparison-shell {
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      gap: var(--space-4);
+      align-items: stretch;
+    }
+
+    .toggle-stack {
+      display: grid;
+      gap: .8rem;
+      align-content: start;
+    }
+
+    .toggle-card {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      color: var(--navy);
+      padding: 1rem;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(12,39,64,.06);
+    }
+
+    .toggle-card[aria-pressed="true"] {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
+    .toggle-card strong { display: block; font-size: 1.05rem; margin-bottom: .25rem; }
+    .toggle-card span { color: currentColor; opacity: .78; }
+
+    .comparison-panel {
+      min-height: 370px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(215,238,232,.58));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      padding: clamp(1.4rem, 3vw, 2.2rem);
+      display: grid;
+      gap: 1.4rem;
+    }
+
+    .comparison-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .9rem;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .comparison-list li {
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(12,39,64,.1);
+      border-radius: 18px;
+      padding: 1rem;
+      min-height: 118px;
+    }
+
+    .lifecycle-map {
+      position: relative;
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      background: var(--navy);
+      box-shadow: var(--shadow);
+      color: var(--white);
+      overflow: hidden;
+    }
+
+    .lifecycle-map::before {
+      content: "";
+      position: absolute;
+      inset: -40% 50% auto -10%;
+      height: 260px;
+      background: radial-gradient(circle, rgba(242,193,78,.36), transparent 70%);
+    }
+
+    .stage-buttons {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .8rem;
+      z-index: 1;
+    }
+
+    .stage-button {
+      border: 1px solid rgba(255,255,255,.24);
+      background: rgba(255,255,255,.08);
+      color: var(--white);
+      border-radius: 22px;
+      padding: 1.2rem;
+      min-height: 150px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    .stage-button:hover { transform: translateY(-3px); }
+
+    .stage-button[aria-pressed="true"] {
+      background: var(--white);
+      color: var(--navy);
+      border-color: var(--white);
+    }
+
+    .stage-button span:first-child {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: rgba(242,193,78,.24);
+      color: currentColor;
+      font-weight: 950;
+      margin-bottom: .85rem;
+    }
+
+    .stage-button strong { display: block; font-size: 1.25rem; margin-bottom: .4rem; }
+
+    .stage-detail {
+      position: relative;
+      margin-top: 1rem;
+      z-index: 1;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 22px;
+      padding: 1.3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+
+    .stage-detail h3 { color: var(--white); margin-bottom: .75rem; }
+    .stage-detail ul { margin: 0; padding-left: 1.15rem; }
+    .stage-detail li + li { margin-top: .4rem; }
+
+    .process-layout {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: var(--space-4);
+      align-items: start;
+    }
+
+    .accordion-list {
+      display: grid;
+      gap: .75rem;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 20px rgba(12,39,64,.05);
+      overflow: hidden;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 1rem 1.15rem;
+      font-weight: 850;
+      color: var(--navy);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 1.25rem; font-weight: 900; color: var(--teal); }
+    details[open] summary::after { content: "−"; }
+
+    details p, details ul {
+      padding: 0 1.15rem 1rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    details ul { padding-left: 2.2rem; }
+
+    .deliverable-box {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: clamp(1.25rem, 2.5vw, 2rem);
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: calc(var(--nav-h) + 24px);
+    }
+
+    .deliverable-list {
+      display: grid;
+      gap: .85rem;
+      margin: 1.1rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .deliverable-list li {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: .75rem;
+      align-items: start;
+      color: var(--muted);
+    }
+
+    .check {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--mint);
+      color: var(--navy);
+      font-weight: 950;
+    }
+
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-bottom: var(--space-4);
+    }
+
+    .tab-btn, .filter-btn, .value-tile, .path-card, .case-card, .po-step {
+      cursor: pointer;
+    }
+
+    .tab-btn, .filter-btn {
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--navy);
+      border-radius: 999px;
+      padding: .65rem .9rem;
+      font-weight: 820;
+    }
+
+    .tab-btn[aria-selected="true"], .filter-btn[aria-pressed="true"] {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
+    .tab-panel {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--white);
+      box-shadow: var(--shadow-soft);
+      padding: clamp(1.2rem, 2.4vw, 2rem);
+      display: grid;
+      gap: 1rem;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .9rem;
+      margin-top: .5rem;
+    }
+
+    .mini-card {
+      border: 1px solid rgba(12,39,64,.1);
+      border-radius: 18px;
+      background: rgba(215,238,232,.38);
+      padding: 1rem;
+    }
+
+    .mini-card strong { display: block; color: var(--navy); margin-bottom: .35rem; }
+
+    .po-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: var(--space-4);
+    }
+
+    .po-steps {
+      display: grid;
+      gap: .75rem;
+    }
+
+    .po-step {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.86);
+      color: var(--navy);
+      padding: 1rem;
+      text-align: left;
+      box-shadow: 0 8px 18px rgba(12,39,64,.05);
+    }
+
+    .po-step[aria-pressed="true"] {
+      background: var(--teal);
+      color: var(--white);
+      border-color: var(--teal);
+    }
+
+    .po-step span {
+      display: block;
+      font-weight: 900;
+      margin-bottom: .2rem;
+    }
+
+    .journey-panel {
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.95), rgba(215,238,232,.65)),
+        var(--white);
+      box-shadow: var(--shadow-soft);
+      padding: clamp(1.25rem, 2.5vw, 2rem);
+      display: grid;
+      align-content: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .journey-panel::before {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 180px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: rgba(242,193,78,.3);
+    }
+
+    .journey-panel > * { position: relative; }
+
+    .usecase-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-bottom: var(--space-4);
+    }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+    }
+
+    .case-card {
+      min-height: 250px;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.88);
+      color: var(--ink);
+      padding: 1.15rem;
+      box-shadow: 0 12px 24px rgba(12,39,64,.07);
+      display: grid;
+      gap: .8rem;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .case-card:hover, .case-card:focus-visible {
+      transform: translateY(-4px);
+      border-color: rgba(0,109,114,.35);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .case-tag {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: 999px;
+      padding: .35rem .58rem;
+      background: var(--soft);
+      color: var(--teal);
+      font-weight: 850;
+      font-size: .82rem;
+    }
+
+    .case-card h3 { font-size: 1.4rem; }
+
+    .case-card .linkish {
+      color: var(--teal);
+      font-weight: 900;
+      align-self: end;
+    }
+
+    dialog {
+      width: min(720px, calc(100% - 28px));
+      border: 0;
+      border-radius: 28px;
+      padding: 0;
+      box-shadow: 0 30px 80px rgba(0,0,0,.28);
+      color: var(--ink);
+    }
+
+    dialog::backdrop { background: rgba(12,39,64,.55); }
+
+    .modal-content { padding: clamp(1.25rem, 3vw, 2rem); }
+    .modal-content h3 { margin-bottom: .7rem; }
+    .modal-content p { color: var(--muted); margin-bottom: 1rem; }
+    .modal-content ul { margin: 0 0 1.2rem; padding-left: 1.2rem; color: var(--muted); }
+
+    .value-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      align-items: start;
+    }
+
+    .value-list {
+      display: grid;
+      gap: .75rem;
+    }
+
+    .value-tile {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      color: var(--navy);
+      padding: 1rem;
+      text-align: left;
+      box-shadow: 0 9px 20px rgba(12,39,64,.05);
+    }
+
+    .value-tile[aria-pressed="true"] {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
+    .value-detail {
+      border-radius: var(--radius-lg);
+      padding: clamp(1.25rem, 2.5vw, 2rem);
+      background: linear-gradient(135deg, var(--navy), #123c52);
+      color: var(--white);
+      box-shadow: var(--shadow);
+      min-height: 340px;
+      display: grid;
+      align-content: center;
+      gap: 1rem;
+    }
+
+    .value-detail h3 { color: var(--white); }
+    .value-detail p { color: rgba(255,255,255,.82); }
+
+    .faq-list {
+      display: grid;
+      gap: .75rem;
+      max-width: 880px;
+    }
+
+    .access-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+    }
+
+    .path-card {
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.86);
+      padding: 1.15rem;
+      box-shadow: 0 12px 24px rgba(12,39,64,.06);
+      display: grid;
+      gap: .75rem;
+      min-height: 250px;
+      color: var(--ink);
+    }
+
+    .path-card[aria-pressed="true"], .path-card:hover {
+      border-color: rgba(0,109,114,.4);
+      background: rgba(215,238,232,.72);
+    }
+
+    .path-number {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--navy);
+      color: var(--white);
+      font-weight: 950;
+    }
+
+    .path-next {
+      margin-top: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      padding: 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .contact-card {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      align-items: center;
+      border-radius: 36px;
+      padding: clamp(1.2rem, 4vw, 3rem);
+      background:
+        radial-gradient(circle at 90% 5%, rgba(242,193,78,.28), transparent 22rem),
+        linear-gradient(135deg, var(--navy), #123c52);
+      color: var(--white);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .contact-card h2, .contact-card h3 { color: var(--white); }
+    .contact-card .lead, .contact-card p { color: rgba(255,255,255,.78); }
+
+    .headshot-wrap {
+      border-radius: 28px;
+      overflow: hidden;
+      border: 6px solid rgba(255,255,255,.2);
+      box-shadow: 0 22px 44px rgba(0,0,0,.22);
+      background: rgba(255,255,255,.1);
+    }
+
+    .headshot-wrap img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+
+    .contact-copy {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      margin-top: .4rem;
+    }
+
+    .copy-status {
+      color: rgba(255,255,255,.78);
+      font-weight: 760;
+      min-height: 1.4em;
+    }
+
+    .site-footer {
+      padding: 2rem 0;
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.2rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .5s ease, transform .5s ease;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hide { display: none !important; }
+
+    @media (max-width: 1060px) {
+      .nav-toggle { display: inline-flex; }
+      .nav-links {
+        position: fixed;
+        inset: var(--nav-h) 16px auto 16px;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: .8rem;
+        box-shadow: var(--shadow);
+      }
+      .nav-open .nav-links { display: flex; }
+      .nav-links a { justify-content: center; }
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-visual { min-height: 430px; order: -1; }
+      .card-grid, .access-grid { grid-template-columns: repeat(2, 1fr); }
+      .comparison-shell, .process-layout, .po-layout, .value-layout, .contact-card { grid-template-columns: 1fr; }
+      .deliverable-box { position: static; }
+      .case-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 720px) {
+      :root { --nav-h: 68px; }
+      .section { padding: 3.4rem 0; }
+      .hero { padding-top: 2.5rem; }
+      .hero-visual { min-height: 370px; }
+      .hero-actions, .path-next { align-items: stretch; }
+      .hero-actions .btn, .path-next .btn, .contact-actions .btn { width: 100%; }
+      .insight-strip, .card-grid, .comparison-list, .stage-buttons, .stage-detail, .mini-grid, .case-grid, .access-grid { grid-template-columns: 1fr; }
+      .comparison-panel { min-height: auto; }
+      .contact-card { padding: 1rem; border-radius: 28px; }
+      .headshot-wrap { max-width: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Header and anchor navigation -->
+  <header class="site-header" role="banner">
+    <div class="container nav-inner">
+      <a class="brand" href="#top" aria-label="Inclusive Design home">
+        <span class="brand-mark" aria-hidden="true">ID</span>
+        <span>Inclusive Design</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Menu</button>
+      <nav aria-label="Primary navigation">
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="#why">Why it matters</a></li>
+          <li><a href="#beyond">Beyond compliance</a></li>
+          <li><a href="#entry">Entry points</a></li>
+          <li><a href="#examples">Examples</a></li>
+          <li><a href="#faq">Questions</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero section" id="top" data-section="top">
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Project support to practice value</p>
+          <h1>Inclusive design for architecture teams that want better project decisions.</h1>
+          <p class="lead">A practical human-centered design capability that helps teams frame pursuits, strengthen live projects, and capture lessons from completed work.</p>
+          <div class="hero-actions" aria-label="Hero actions">
+            <a class="btn btn-primary" href="mailto:flasta@gftinc.com?subject=Inclusive%20design%20project%20conversation">Start a Project Conversation</a>
+            <a class="btn btn-secondary" href="#entry">Explore Entry Points</a>
+          </div>
+          <div class="hero-badges" aria-label="Key capability themes">
+            <span class="pill">Pursuit strategy</span>
+            <span class="pill">Design review</span>
+            <span class="pill">Post-occupancy learning</span>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="Animated people-centered visual">
+          <figure class="gif-stage">
+            <img class="hero-gif" src="inclusive-design-users.gif" alt="Animated person walking across the page as a people-centered visual for inclusive design.">
+            <img class="hero-still" src="inclusive-design-users-still.png" alt="Still image from the animated people-centered visual.">
+          </figure>
+          <button class="motion-toggle" type="button" aria-pressed="false">Pause motion</button>
+        </div>
+      </div>
+
+      <div class="container insight-strip reveal" aria-label="Page structure summary">
+        <div class="stat-card">
+          <span class="stat-num" data-count="3">3</span>
+          <span>entry points across the lifecycle</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" data-count="5">5</span>
+          <span>project and practice value outputs</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" data-count="4">4</span>
+          <span>simple access pathways</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why inclusive design matters -->
+    <section class="section" id="why" data-section="why">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Why it matters</p>
+          <h2>Built environments perform through human experience.</h2>
+          <p class="lead">Inclusive design helps project teams study how people use, interpret, navigate, wait, work, recover, and participate in a place. The value shows up in design quality, operational fit, dignity, safety, comfort, and clearer project decisions.</p>
+        </div>
+
+        <div class="card-grid reveal">
+          <article class="card">
+            <div class="icon" aria-hidden="true">01</div>
+            <h3>Usability</h3>
+            <p class="muted">Spaces are assessed through everyday actions, decision points, transitions, and support needs.</p>
+            <div class="project-callout">What this means: user friction can be addressed before it becomes a field issue.</div>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">02</div>
+            <h3>Dignity</h3>
+            <p class="muted">Design choices are reviewed for privacy, choice, independence, and the ability to ask for help without stigma.</p>
+            <div class="project-callout">What this means: support spaces can feel integrated, legible, and respectful.</div>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">03</div>
+            <h3>Orientation</h3>
+            <p class="muted">Wayfinding, lighting, acoustics, sightlines, landmarks, and thresholds are considered together.</p>
+            <div class="project-callout">What this means: people spend less effort decoding the environment.</div>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">04</div>
+            <h3>Outcomes</h3>
+            <p class="muted">Recommendations are framed as practical decisions across function, aesthetics, operations, and budget.</p>
+            <div class="project-callout">What this means: the team gets usable input rather than a separate checklist.</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Beyond compliance -->
+    <section class="section" id="beyond" data-section="beyond">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Beyond accessibility compliance</p>
+          <h2>Code is essential. Inclusive design adds the human-use layer.</h2>
+          <p class="lead">The comparison below is meant to help teams see where a compliance baseline ends and where a broader design lens can strengthen the project.</p>
+        </div>
+
+        <div class="comparison-shell reveal">
+          <div class="toggle-stack" role="group" aria-label="Compare design lenses">
+            <button class="toggle-card compare-toggle" type="button" aria-pressed="true" data-compare="compliance">
+              <strong>Accessibility compliance</strong>
+              <span>Confirms required technical access criteria.</span>
+            </button>
+            <button class="toggle-card compare-toggle" type="button" aria-pressed="false" data-compare="inclusive">
+              <strong>Inclusive design lens</strong>
+              <span>Studies how people experience and use the environment.</span>
+            </button>
+          </div>
+          <div class="comparison-panel" id="comparison-panel" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lifecycle entry points -->
+    <section class="section" id="entry" data-section="entry">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Entry points</p>
+          <h2>Three natural moments to bring inclusive design into the work.</h2>
+          <p class="lead">The model is intentionally lightweight. Involvement scales to the project phase, the project type, and the decision the team needs to make.</p>
+        </div>
+
+        <div class="lifecycle-map reveal">
+          <div class="stage-buttons" role="group" aria-label="Lifecycle entry points">
+            <button class="stage-button" type="button" aria-pressed="true" data-stage="pursuit">
+              <span>1</span>
+              <strong>Pursuit</strong>
+              <small>Sharpen proposals, interviews, and human-centered scope.</small>
+            </button>
+            <button class="stage-button" type="button" aria-pressed="false" data-stage="development">
+              <span>2</span>
+              <strong>Design Development</strong>
+              <small>Review defined milestones and translate research into design moves.</small>
+            </button>
+            <button class="stage-button" type="button" aria-pressed="false" data-stage="post">
+              <span>3</span>
+              <strong>Post-Occupancy</strong>
+              <small>Observe real use and turn findings into transferable learning.</small>
+            </button>
+          </div>
+          <div class="stage-detail" id="stage-detail" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pursuit support -->
+    <section class="section" id="pursuit" data-section="pursuit">
+      <div class="container process-layout">
+        <div class="reveal">
+          <p class="eyebrow">Pursuit</p>
+          <h2>Define design intent in human terms before the story is fixed.</h2>
+          <p class="lead">At pursuit stage, inclusive design can help a team connect project understanding to how people will actually arrive, wait, orient, work, receive support, and use the environment.</p>
+          <div class="accordion-list" style="margin-top: 1.5rem;">
+            <details open>
+              <summary>Review RFPs and RFQs for inclusive design relevance</summary>
+              <p>Identify where passenger, resident, worker, visitor, caregiver, or staff experience could strengthen the response.</p>
+            </details>
+            <details>
+              <summary>Draft proposal and SOQ language</summary>
+              <p>Translate human-centered design intent into clear language that can support differentiation without overstating the role.</p>
+            </details>
+            <details>
+              <summary>Support shortlist interviews and presentations</summary>
+              <p>Prepare talking points that help the team answer questions with credibility, specificity, and a clear project lens.</p>
+            </details>
+            <details>
+              <summary>Develop preliminary scoping recommendations</summary>
+              <p>Recommend whether inclusive design input should continue into the project and where it could be most useful.</p>
+            </details>
+          </div>
+        </div>
+
+        <aside class="deliverable-box reveal" aria-labelledby="pursuit-receives">
+          <h3 id="pursuit-receives">What the team receives</h3>
+          <ul class="deliverable-list">
+            <li><span class="check" aria-hidden="true">✓</span><span>Proposal narrative that speaks to human experience and project relevance.</span></li>
+            <li><span class="check" aria-hidden="true">✓</span><span>Interview talking points grounded in method, not vague values.</span></li>
+            <li><span class="check" aria-hidden="true">✓</span><span>Early identification of inclusive design opportunities and possible scope.</span></li>
+            <li><span class="check" aria-hidden="true">✓</span><span>A concise scoping note with recommended level of involvement.</span></li>
+          </ul>
+          <a class="btn btn-soft" href="mailto:flasta@gftinc.com?subject=Pursuit%20support%20request" style="margin-top: 1.2rem;">Share an RFP or RFQ</a>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Design development -->
+    <section class="section" id="development" data-section="development">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Design development</p>
+          <h2>Use a focused review to strengthen the work while decisions can still be shaped.</h2>
+          <p class="lead">A defined milestone review gives the team actionable observations without turning inclusive design into an oversized process.</p>
+        </div>
+
+        <div class="category-tabs reveal" role="tablist" aria-label="Design development review categories">
+          <button class="tab-btn dd-tab" role="tab" type="button" aria-selected="true" data-dd="wayfinding">Wayfinding</button>
+          <button class="tab-btn dd-tab" role="tab" type="button" aria-selected="false" data-dd="sensory">Sensory environment</button>
+          <button class="tab-btn dd-tab" role="tab" type="button" aria-selected="false" data-dd="support">Support spaces</button>
+          <button class="tab-btn dd-tab" role="tab" type="button" aria-selected="false" data-dd="details">Details and specs</button>
+        </div>
+
+        <div class="tab-panel reveal" id="dd-panel" role="tabpanel" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Post-occupancy -->
+    <section class="section" id="post" data-section="post">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Post-occupancy</p>
+          <h2>Turn completed projects into evidence teams can use again.</h2>
+          <p class="lead">Structured observation can document successes, gaps, patterns, and recommendations. The strongest value comes when findings become a repeatable learning resource.</p>
+        </div>
+
+        <div class="po-layout reveal">
+          <div class="po-steps" role="group" aria-label="Post occupancy process">
+            <button class="po-step" type="button" aria-pressed="true" data-po="observe"><span>01 Observe</span>Study the environment in use.</button>
+            <button class="po-step" type="button" aria-pressed="false" data-po="document"><span>02 Document</span>Record successes, gaps, and conditions.</button>
+            <button class="po-step" type="button" aria-pressed="false" data-po="translate"><span>03 Translate</span>Convert findings into journey-based frameworks.</button>
+            <button class="po-step" type="button" aria-pressed="false" data-po="apply"><span>04 Apply</span>Support case studies, awards, and future guidance.</button>
+          </div>
+          <div class="journey-panel" id="po-panel" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Project examples -->
+    <section class="section" id="examples" data-section="examples">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Project examples and use cases</p>
+          <h2>Use the lens wherever people rely on the environment to participate well.</h2>
+          <p class="lead">These examples are intentionally framed as use cases. They show how inclusive design thinking can support different project types without overclaiming outcomes.</p>
+        </div>
+
+        <div class="usecase-tools reveal" role="group" aria-label="Filter example cards">
+          <button class="filter-btn" type="button" aria-pressed="true" data-filter="all">All</button>
+          <button class="filter-btn" type="button" aria-pressed="false" data-filter="passenger">Passenger</button>
+          <button class="filter-btn" type="button" aria-pressed="false" data-filter="housing">Housing</button>
+          <button class="filter-btn" type="button" aria-pressed="false" data-filter="workplace">Workplace</button>
+          <button class="filter-btn" type="button" aria-pressed="false" data-filter="sensory">Sensory</button>
+        </div>
+
+        <div class="case-grid reveal" id="case-grid"></div>
+      </div>
+    </section>
+
+    <!-- What it produces -->
+    <section class="section" id="produces" data-section="produces">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">What it produces</p>
+          <h2>The work creates project value and practice value.</h2>
+          <p class="lead">When observations and recommendations are documented, they can improve decisions today and strengthen the way future work is framed.</p>
+        </div>
+
+        <div class="value-layout reveal">
+          <div class="value-list" role="group" aria-label="Value outputs">
+            <button class="value-tile" type="button" aria-pressed="true" data-value="decisions">Better project decisions</button>
+            <button class="value-tile" type="button" aria-pressed="false" data-value="costs">Lower downstream costs</button>
+            <button class="value-tile" type="button" aria-pressed="false" data-value="client">Stronger client outcomes</button>
+            <button class="value-tile" type="button" aria-pressed="false" data-value="documentation">Better documentation</button>
+            <button class="value-tile" type="button" aria-pressed="false" data-value="visibility">More visible capability</button>
+          </div>
+          <div class="value-detail" id="value-detail" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq" data-section="faq">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">Questions teams usually ask</p>
+          <h2>Designed to be useful, bounded, and easy to start.</h2>
+        </div>
+
+        <div class="faq-list reveal">
+          <details>
+            <summary>We already consider accessibility. How is this different?</summary>
+            <p>Good. This builds on that foundation and adds a more structured way to evaluate how people actually experience and use a space.</p>
+          </details>
+          <details>
+            <summary>Does this apply to my project type?</summary>
+            <p>Yes, when people use, navigate, interpret, wait, work, recover, or interact with the environment. The level of support should match the project.</p>
+          </details>
+          <details>
+            <summary>Is there a cost to the project?</summary>
+            <p>Initial engagement can begin within existing workflows. Some projects may later choose to scope additional support if deeper involvement adds value.</p>
+          </details>
+          <details>
+            <summary>Does this work remotely?</summary>
+            <p>Yes. Most pursuit and design development support is document-based. Post-occupancy evaluation usually requires a site visit.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Access pathways -->
+    <section class="section" id="access" data-section="access">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">How to access this resource</p>
+          <h2>Choose the path that matches the work in front of you.</h2>
+          <p class="lead">Select a pathway to see the simplest next step.</p>
+        </div>
+
+        <div class="access-grid reveal" role="group" aria-label="Access pathways">
+          <button class="path-card" type="button" aria-pressed="true" data-path="new">
+            <span class="path-number">1</span>
+            <h3>New pursuit</h3>
+            <p class="muted">Share the RFP or RFQ at pursuit kickoff.</p>
+          </button>
+          <button class="path-card" type="button" aria-pressed="false" data-path="active">
+            <span class="path-number">2</span>
+            <h3>Active project</h3>
+            <p class="muted">Reach out at kickoff or a design milestone.</p>
+          </button>
+          <button class="path-card" type="button" aria-pressed="false" data-path="complete">
+            <span class="path-number">3</span>
+            <h3>Completed project</h3>
+            <p class="muted">Suggest a project for post-occupancy evaluation.</p>
+          </button>
+          <button class="path-card" type="button" aria-pressed="false" data-path="marketing">
+            <span class="path-number">4</span>
+            <h3>Marketing or awards</h3>
+            <p class="muted">Use inclusive design involvement to support methodology and outcomes.</p>
+          </button>
+        </div>
+
+        <div class="path-next reveal" id="path-next" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Final contact -->
+    <section class="section" id="contact" data-section="contact">
+      <div class="container">
+        <div class="contact-card reveal">
+          <div class="headshot-wrap">
+            <img src="francisco-lasta-headshot.png" alt="Portrait of Francisco Lasta, OTR/L, Assoc. AIA.">
+          </div>
+          <div class="contact-copy">
+            <p class="eyebrow" style="color: #f2c14e;">Final CTA</p>
+            <h2>The capability exists. The resource is available. The next step is a project conversation.</h2>
+            <p class="lead">Bring inclusive design in when you have a pursuit coming up, an active project that could benefit from a focused review, or a completed project with lessons worth documenting.</p>
+            <div>
+              <h3>Francisco Lasta, OTR/L, Assoc. AIA</h3>
+              <p>Inclusive Design Lead</p>
+              <p><a href="mailto:flasta@gftinc.com">flasta@gftinc.com</a></p>
+            </div>
+            <div class="contact-actions">
+              <a class="btn btn-soft" href="mailto:flasta@gftinc.com?subject=Inclusive%20design%20project%20conversation">Email Francisco</a>
+              <button class="btn btn-secondary" type="button" id="copy-email">Copy email</button>
+            </div>
+            <p class="copy-status" id="copy-status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <p>Inclusive Design Across the Project Lifecycle</p>
+      <p>Prototype page for architecture project teams</p>
+    </div>
+  </footer>
+
+  <dialog id="case-dialog" aria-labelledby="case-dialog-title">
+    <div class="modal-content">
+      <h3 id="case-dialog-title"></h3>
+      <p id="case-dialog-copy"></p>
+      <ul id="case-dialog-list"></ul>
+      <button class="btn btn-primary" type="button" id="close-dialog">Close</button>
+    </div>
+  </dialog>
+
+  <script>
+    /* =========================
+       Data for interactive sections
+       ========================= */
+    const comparisonData = {
+      compliance: {
+        title: "Accessibility compliance confirms the required baseline.",
+        copy: "It is essential for technical access, code alignment, and minimum requirements. The limitation is that compliance alone may not show how well people understand, tolerate, or use the environment in real life.",
+        points: [
+          "Clearance, reach, slope, width, and required accessible routes.",
+          "Technical standards that support legal and regulatory obligations.",
+          "Necessary baseline for equitable physical access.",
+          "Often strongest when paired with a broader human-use review."
+        ]
+      },
+      inclusive: {
+        title: "Inclusive design studies the experience of use.",
+        copy: "It asks how different people arrive, orient, wait, transition, receive support, and participate. The goal is practical project input that helps teams make better decisions.",
+        points: [
+          "Wayfinding, sensory load, comfort, dignity, choice, and support needs.",
+          "Human-centered design intent that can shape pursuits and reviews.",
+          "Recommendations that connect evidence, observation, and design judgment.",
+          "Documentation that can strengthen case studies, awards, and future work."
+        ]
+      }
+    };
+
+    const stageData = {
+      pursuit: {
+        happensTitle: "What happens",
+        receivesTitle: "What the team receives",
+        happens: ["RFP or RFQ review", "Proposal and SOQ language", "Interview preparation", "Preliminary scoping recommendations"],
+        receives: ["A stronger project narrative", "Human-centered design intent", "Relevant talking points", "Early identification of design opportunities"]
+      },
+      development: {
+        happensTitle: "What happens",
+        receivesTitle: "What the team receives",
+        happens: ["Focused milestone review", "Written observations", "Specification or detail input", "Coordination on wayfinding, lighting, acoustics, interiors, and support spaces"],
+        receives: ["Observation and recommendation report", "Design rationale for the record", "Issues identified while changes are still possible", "Material that can support project storytelling"]
+      },
+      post: {
+        happensTitle: "What happens",
+        receivesTitle: "What the firm receives",
+        happens: ["Structured observation of the built environment in use", "Documentation of successes and gaps", "Pattern identification", "Evidence gathering"],
+        receives: ["Post-occupancy findings", "Evidence package for case studies and awards", "Transferable lessons", "Recommendations for future guidance"]
+      }
+    };
+
+    const ddData = {
+      wayfinding: {
+        title: "Wayfinding, orientation, and decision space",
+        copy: "Review how people locate entries, read hierarchy, interpret thresholds, and recover when they are uncertain.",
+        cards: [
+          ["Look for", "Landmarks, sightlines, signage, decision points, repeated spaces, and stress points."],
+          ["Design input", "Clarify hierarchy, reduce avoidable decision load, and support multiple ways to orient."],
+          ["Team receives", "Concise observations that connect layout decisions to user comprehension."]
+        ]
+      },
+      sensory: {
+        title: "Lighting, acoustics, temperature, and sensory control",
+        copy: "Review the sensory conditions that can support or undermine comfort, regulation, safety, and performance.",
+        cards: [
+          ["Look for", "Glare, noise, echo, thermal exposure, visual clutter, and zones for pause or reset."],
+          ["Design input", "Tune atmosphere so spaces can guide, calm, energize, or support recovery."],
+          ["Team receives", "Targeted recommendations tied to user needs and operational realities."]
+        ]
+      },
+      support: {
+        title: "Support spaces, dignity, and choice",
+        copy: "Review places where people pause, ask for help, sit, transfer, care for others, recover, or manage personal needs.",
+        cards: [
+          ["Look for", "Seating choice, privacy, refuge, caregiver support, staff support, restrooms, and first-aid conditions."],
+          ["Design input", "Strengthen dignity and independence through integrated support, not isolated fixes."],
+          ["Team receives", "Practical recommendations that fit the project type and scope."]
+        ]
+      },
+      details: {
+        title: "Details, specifications, FF&E, and coordination points",
+        copy: "Review the smaller decisions that can shape real use, especially when they affect comfort, reach, visibility, maintenance, and choice.",
+        cards: [
+          ["Look for", "Furniture, materials, surfaces, controls, fixtures, hardware, signage, and digital touchpoints."],
+          ["Design input", "Translate evidence and user variability into choices that can be documented."],
+          ["Team receives", "A clearer record of design rationale and action items for coordination."]
+        ]
+      }
+    };
+
+    const poData = {
+      observe: {
+        title: "Observe the environment as people actually use it.",
+        copy: "Post-occupancy work starts with the lived sequence of the place: arrival, decision points, waiting, transitions, support spaces, and departures.",
+        list: ["Track patterns across different user groups.", "Note environmental facilitators and barriers.", "Connect observations to project intent and daily use."]
+      },
+      document: {
+        title: "Document successes, gaps, and recurring conditions.",
+        copy: "The goal is a clear record that helps teams understand what happened, where it happened, and why it matters.",
+        list: ["Location-based observations.", "Representative examples.", "Actionable recommendations for follow-up."]
+      },
+      translate: {
+        title: "Translate findings into a journey-based framework.",
+        copy: "Findings become easier to use when they are organized by experience stage and functional role rather than only by room or drawing reference.",
+        list: ["Journey stage and functional role.", "Experience context and observed condition.", "Impact analysis and recommendation."]
+      },
+      apply: {
+        title: "Apply the learning to future work.",
+        copy: "A completed project can support case studies, award submissions, leadership communication, and internal guidance when the evidence is captured clearly.",
+        list: ["Evidence for project stories.", "Lessons that transfer across offices and project types.", "Better criteria for future scopes and pursuits."]
+      }
+    };
+
+    const cases = [
+      {
+        title: "Passenger journey analysis",
+        tag: "passenger",
+        type: "Passenger",
+        short: "Use structured observation to understand how travelers navigate, wait, transition, and access support.",
+        detail: "A journey lens can help teams organize findings across terminal or station environments. It turns a long list of conditions into an understandable sequence of user experience issues.",
+        bullets: ["Arrival, orientation, waiting, and transfer points.", "Observed conditions paired with experience impact.", "Recommendations that support planning and phased improvements."]
+      },
+      {
+        title: "Resident-centered housing",
+        tag: "housing",
+        type: "Housing",
+        short: "Frame housing quality through daily routines, common areas, aging, privacy, and participation.",
+        detail: "A resident-centered lens can help a team speak more clearly about quality of life, use of common areas, and the experience of navigating shared environments.",
+        bullets: ["Daily use of entries, corridors, elevators, and community spaces.", "Aging, mobility, sensory, and cognitive variability.", "Clearer project narratives for clients and interviews."]
+      },
+      {
+        title: "Transit center passenger experience",
+        tag: "passenger",
+        type: "Transit",
+        short: "Review the full sequence from arrival to waiting, boarding, shade, service visibility, and refuge.",
+        detail: "Transit projects benefit from early attention to pedestrian spines, decision space, heat and glare, shade, dignity, seating, and customer service visibility.",
+        bullets: ["Arrival and pedestrian spine.", "Waiting and orientation.", "Seating choice, shade, refuge, and support spaces."]
+      },
+      {
+        title: "Worker health and dignity",
+        tag: "workplace",
+        type: "Workplace",
+        short: "Center worker experience in equipment-driven settings, including arrival, recovery, hygiene, safety, and performance.",
+        detail: "Inclusive design can help translate worker variability into planning guidance for high-demand environments where efficiency and human burden intersect.",
+        bullets: ["Arrival, landmarks, and repetitive space wayfinding.", "Locker transitions, break areas, and quiet recovery zones.", "Hygiene, first aid, and staff support spaces."]
+      },
+      {
+        title: "Sensory room design",
+        tag: "sensory",
+        type: "Sensory",
+        short: "Translate sensory processing insight into airport-ready questions about zoning, lighting, acoustics, and caregiver support.",
+        detail: "Sensory room work can benefit from benchmarking, design translation, and repeatable guidance that supports more than one room or location.",
+        bullets: ["Choice, agency, privacy, and de-escalation.", "Legibility, signage, tactile cues, and room naming.", "Lighting, sound, materials, furniture, stroller storage, and maintainability."]
+      }
+    ];
+
+    const valueData = {
+      decisions: ["Better project decisions", "Teams can assess how people will use, interpret, navigate, and participate in the environment before decisions are locked."],
+      costs: ["Lower downstream costs", "Issues caught during design are usually easier to address than issues discovered during construction or after occupancy."],
+      client: ["Stronger client outcomes", "Spaces that work across a wider range of people and situations can support stronger user experience and operational fit."],
+      documentation: ["Better documentation", "When the thinking is captured, the team has stronger material for case studies, awards, lessons learned, and future scopes."],
+      visibility: ["More visible capability", "Inclusive design becomes a usable project resource that teams can find, request, and apply across project types."]
+    };
+
+    const pathData = {
+      new: ["New pursuit", "Send the RFP or RFQ at pursuit kickoff so relevance, scope, and proposal language can be assessed early.", "Share the RFP or RFQ"],
+      active: ["Active project", "Reach out at kickoff, SD, DD, or another design milestone. A brief scoping assessment can determine the right level of involvement.", "Request a milestone review"],
+      complete: ["Completed project", "Suggest post-occupancy evaluation when a project has transferable lessons, award potential, or client learning value.", "Suggest a POE candidate"],
+      marketing: ["Marketing or awards", "Use inclusive design involvement to support methodology descriptions, evidence sections, outcome narratives, and stronger project stories.", "Discuss a project story"]
+    };
+
+    /* =========================
+       Utility render functions
+       ========================= */
+    const qs = (selector, scope = document) => scope.querySelector(selector);
+    const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
+
+    function renderComparison(key) {
+      const data = comparisonData[key];
+      qs("#comparison-panel").innerHTML = `
+        <div>
+          <h3>${data.title}</h3>
+          <p class="muted" style="margin-top:.75rem;">${data.copy}</p>
+        </div>
+        <ul class="comparison-list">
+          ${data.points.map(point => `<li>${point}</li>`).join("")}
+        </ul>
+      `;
+    }
+
+    function renderStage(key) {
+      const data = stageData[key];
+      qs("#stage-detail").innerHTML = `
+        <div>
+          <h3>${data.happensTitle}</h3>
+          <ul>${data.happens.map(item => `<li>${item}</li>`).join("")}</ul>
+        </div>
+        <div>
+          <h3>${data.receivesTitle}</h3>
+          <ul>${data.receives.map(item => `<li>${item}</li>`).join("")}</ul>
+        </div>
+      `;
+    }
+
+    function renderDD(key) {
+      const data = ddData[key];
+      qs("#dd-panel").innerHTML = `
+        <div>
+          <h3>${data.title}</h3>
+          <p class="muted" style="margin-top:.7rem;">${data.copy}</p>
+        </div>
+        <div class="mini-grid">
+          ${data.cards.map(card => `
+            <div class="mini-card">
+              <strong>${card[0]}</strong>
+              <span class="muted">${card[1]}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderPO(key) {
+      const data = poData[key];
+      qs("#po-panel").innerHTML = `
+        <h3>${data.title}</h3>
+        <p class="muted">${data.copy}</p>
+        <ul>${data.list.map(item => `<li>${item}</li>`).join("")}</ul>
+      `;
+    }
+
+    function renderCases(filter = "all") {
+      const grid = qs("#case-grid");
+      const filtered = filter === "all" ? cases : cases.filter(item => item.tag === filter);
+      grid.innerHTML = filtered.map((item, index) => `
+        <button class="case-card" type="button" data-case-title="${item.title}" aria-label="Open ${item.title} use case">
+          <span class="case-tag">${item.type}</span>
+          <h3>${item.title}</h3>
+          <p class="muted">${item.short}</p>
+          <span class="linkish">Open use case</span>
+        </button>
+      `).join("");
+
+      qsa(".case-card", grid).forEach(button => {
+        button.addEventListener("click", () => openCase(button.dataset.caseTitle));
+      });
+    }
+
+    function renderValue(key) {
+      const data = valueData[key];
+      qs("#value-detail").innerHTML = `
+        <h3>${data[0]}</h3>
+        <p>${data[1]}</p>
+      `;
+    }
+
+    function renderPath(key) {
+      const data = pathData[key];
+      qs("#path-next").innerHTML = `
+        <div>
+          <h3>${data[0]}</h3>
+          <p class="muted">${data[1]}</p>
+        </div>
+        <a class="btn btn-primary" href="mailto:flasta@gftinc.com?subject=${encodeURIComponent(data[2])}">${data[2]}</a>
+      `;
+    }
+
+    function openCase(title) {
+      const item = cases.find(entry => entry.title === title);
+      const dialog = qs("#case-dialog");
+      qs("#case-dialog-title").textContent = item.title;
+      qs("#case-dialog-copy").textContent = item.detail;
+      qs("#case-dialog-list").innerHTML = item.bullets.map(bullet => `<li>${bullet}</li>`).join("");
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute("open", "");
+      }
+    }
+
+    /* =========================
+       Initialization
+       ========================= */
+    renderComparison("compliance");
+    renderStage("pursuit");
+    renderDD("wayfinding");
+    renderPO("observe");
+    renderCases();
+    renderValue("decisions");
+    renderPath("new");
+
+    /* Navigation */
+    const navToggle = qs(".nav-toggle");
+    navToggle.addEventListener("click", () => {
+      const isOpen = document.body.classList.toggle("nav-open");
+      navToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    qsa(".nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.body.classList.remove("nav-open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    /* Scroll progress and section highlighting */
+    const progress = qs(".scroll-progress");
+    window.addEventListener("scroll", () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+      progress.style.width = `${pct}%`;
+    }, { passive: true });
+
+    const navLinks = qsa(".nav-links a");
+    const observedSections = qsa("[data-section]");
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          navLinks.forEach(link => {
+            const active = link.getAttribute("href") === `#${id}`;
+            if (active) link.setAttribute("aria-current", "true");
+            else link.removeAttribute("aria-current");
+          });
+        }
+      });
+    }, { rootMargin: "-45% 0px -45% 0px", threshold: .01 });
+
+    observedSections.forEach(section => sectionObserver.observe(section));
+
+    /* Reveal animation */
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add("is-visible");
+      });
+    }, { threshold: .12 });
+    qsa(".reveal").forEach(el => revealObserver.observe(el));
+
+    /* Counters */
+    const countObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.count || 0);
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) {
+          el.textContent = target;
+          return;
+        }
+        let start = 0;
+        const steps = 22;
+        const timer = setInterval(() => {
+          start += 1;
+          el.textContent = Math.round((target * start) / steps);
+          if (start >= steps) clearInterval(timer);
+        }, 28);
+        countObserver.unobserve(el);
+      });
+    }, { threshold: .65 });
+    qsa("[data-count]").forEach(el => countObserver.observe(el));
+
+    /* Hero motion toggle */
+    const motionButton = qs(".motion-toggle");
+    motionButton.addEventListener("click", () => {
+      const paused = document.body.classList.toggle("motion-paused");
+      motionButton.setAttribute("aria-pressed", String(paused));
+      motionButton.textContent = paused ? "Play motion" : "Pause motion";
+    });
+
+    /* Compare toggles */
+    qsa(".compare-toggle").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".compare-toggle").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        renderComparison(button.dataset.compare);
+      });
+    });
+
+    /* Lifecycle buttons */
+    qsa(".stage-button").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".stage-button").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        renderStage(button.dataset.stage);
+      });
+    });
+
+    /* Design development tabs */
+    qsa(".dd-tab").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".dd-tab").forEach(btn => btn.setAttribute("aria-selected", "false"));
+        button.setAttribute("aria-selected", "true");
+        renderDD(button.dataset.dd);
+      });
+    });
+
+    /* Post occupancy steps */
+    qsa(".po-step").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".po-step").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        renderPO(button.dataset.po);
+      });
+    });
+
+    /* Use case filters */
+    qsa(".filter-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".filter-btn").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        renderCases(button.dataset.filter);
+      });
+    });
+
+    /* Dialog */
+    qs("#close-dialog").addEventListener("click", () => qs("#case-dialog").close());
+    qs("#case-dialog").addEventListener("click", event => {
+      const dialog = event.currentTarget;
+      if (event.target === dialog) dialog.close();
+    });
+
+    /* Value tiles */
+    qsa(".value-tile").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".value-tile").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        renderValue(button.dataset.value);
+      });
+    });
+
+    /* Access pathway cards */
+    qsa(".path-card").forEach(button => {
+      button.addEventListener("click", () => {
+        qsa(".path-card").forEach(btn => btn.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        renderPath(button.dataset.path);
+      });
+    });
+
+    /* Copy email */
+    qs("#copy-email").addEventListener("click", async () => {
+      const status = qs("#copy-status");
+      try {
+        await navigator.clipboard.writeText("flasta@gftinc.com");
+        status.textContent = "Email copied: flasta@gftinc.com";
+      } catch (err) {
+        status.textContent = "Email: flasta@gftinc.com";
+      }
+    });
+  </script>
+</body>
+</html>
